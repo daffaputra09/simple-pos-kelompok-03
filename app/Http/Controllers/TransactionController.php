@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 class TransactionController extends Controller
 {
     public function create()
@@ -11,27 +9,57 @@ class TransactionController extends Controller
         $products = collect([
             (object) [
                 'id' => 1,
-                'name' => 'Kopi Susu Gula Aren',
-                'sku' => 'KPG-001',
-                'price' => 18000,
-                'stock' => 12,
+                'name' => 'Kopi Sachet',
+                'price' => 3000,
+                'stock' => 40,
             ],
             (object) [
                 'id' => 2,
-                'name' => 'Roti Bakar Cokelat',
-                'sku' => 'RBC-002',
-                'price' => 15000,
-                'stock' => 5,
+                'name' => 'Teh Celup',
+                'price' => 2500,
+                'stock' => 25,
             ],
             (object) [
                 'id' => 3,
-                'name' => 'Es Teh Manis',
-                'sku' => 'ETM-003',
-                'price' => 5000,
-                'stock' => 25,
+                'name' => 'Mie Instan',
+                'price' => 3500,
+                'stock' => 8,
+            ],
+            (object) [
+                'id' => 4,
+                'name' => 'Air Mineral 600ml',
+                'price' => 4000,
+                'stock' => 60,
+            ],
+            (object) [
+                'id' => 5,
+                'name' => 'Roti Tawar',
+                'price' => 12000,
+                'stock' => 15,
+            ],
+            (object) [
+                'id' => 6,
+                'name' => 'Gula Pasir 1kg',
+                'price' => 15000,
+                'stock' => 5,
             ],
         ]);
 
-        return view('pos.create', compact('products'));
+        return view('pos.create', ['products' => $products]);
+    }
+
+    public function store()
+    {
+        return 'Transaksi disimpan (belum ada logika penyimpanan)';
+    }
+
+    public function index()
+    {
+        return 'Daftar transaksi';
+    }
+
+    public function show(string $id)
+    {
+        return "Detail transaksi #{$id}";
     }
 }
