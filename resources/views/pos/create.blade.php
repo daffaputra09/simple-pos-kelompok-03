@@ -7,10 +7,20 @@
 <div x-data="{
     cart: [],
     addToCart(id, name, price) {
-        this.cart.push({ id, name, price });
+        const existing = this.cart.find((item) => item.id === id);
+
+        if (existing) {
+            existing.qty++;
+            return;
+        }
+
+        this.cart.push({ id, name, price, qty: 1 });
+    },
+    lineTotal(item) {
+        return item.price * item.qty;
     },
     subtotal() {
-        return this.cart.reduce((sum, item) => sum + item.price, 0);
+        return this.cart.reduce((sum, item) => sum + this.lineTotal(item), 0);
     }
 }">
     <div class="grid grid-cols-3 gap-4">
@@ -24,7 +34,7 @@
     </div>
     <div class="mt-4 border-t pt-3">
         <template x-for="item in cart" :key="item.id">
-            <p x-text="item.name + ' - Rp ' + item.price"></p>
+            <p x-text="item.name + ' x' + item.qty + ' - Rp ' + lineTotal(item)"></p>
         </template>
         <p class="font-semibold mt-2">Subtotal: Rp <span x-text="subtotal()"></span></p>
     </div>
