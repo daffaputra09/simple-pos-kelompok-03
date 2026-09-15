@@ -36,6 +36,13 @@
             @click="addToCart({{ $product->id }}, '{{ $product->name }}', {{ $product->price }})">
             <p class="font-medium">{{ $product->name }}</p>
             <p class="text-sm text-slate-500">Rp {{ number_format($product->price) }}</p>
+
+            {{-- Badge Stok Menipis --}}
+            @if ($product->stock < 10)
+                <span class="inline-block mt-2 px-2 py-0.5 text-xs 
+                font-semibold rounded bg-amber-100 text-amber-700">
+                Stok Menipis </span>
+            @endif
         </div>
         @endforeach
     </div>
