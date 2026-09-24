@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained();
             $table->string('name');
             $table->unsignedInteger('price');
-            $table->unsignedInteger('stock')->default();
+            $table->unsignedInteger('stock')->default(0);
             $table->timestamps();
         });
     }
