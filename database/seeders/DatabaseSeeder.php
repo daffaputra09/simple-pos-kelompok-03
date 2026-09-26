@@ -21,14 +21,18 @@ class DatabaseSeeder extends Seeder
             ->all();
 
         $products = [];
+        $productNumber = 0;
 
         foreach ($categoryIds as $categoryId) {
             for ($i = 0; $i < 75; $i++) {
+                $productNumber++;
+
                 $products[] = [
                     'category_id' => $categoryId,
                     'name' => fake()->words(2, true),
                     'price' => fake()->numberBetween(3000, 50000),
                     'stock' => fake()->numberBetween(0, 200),
+                    'is_active' => $productNumber % 10 !== 0,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
