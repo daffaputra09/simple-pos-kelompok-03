@@ -21,6 +21,25 @@ class TransactionController extends Controller
     {
         $validated = $request->validated();
 
+        // 1. Kumpulkan total qty yang diminta per produk
+        $requestedQtys = [];
+        foreach ($validated['items'] as $item) {
+            $productId = $item['product_id'];
+            $requestedQtys[$productId] = ($requestedQtys[$productId] ?? 0) + $item['qty'];
+        }
+
+        // 2. Cek ketersediaan stok di database
+        foreach ($requestedQtys as $productId => $totalQty) {
+            $product = Product::find($productId);
+            if ($totalQty > $product->stock) {
+                // Tolak transaksi dan kembalikan pesan error menyebutkan nama produk
+                return back()->withErrors([
+                    'items' => "Transaksi gagal: Stok produk '{$product->name}' tidak mencukupi! (Sisa stok: {$product->stock}, Diminta: {$totalQty})."
+                ]);
+            }
+        }
+
+        // 3. Jika stok aman, lanjutkan penyimpanan
         DB::transaction(function () use ($validated) {
             $transaction = Transaction::create([
                 'user_id' => 1,
@@ -39,6 +58,9 @@ class TransactionController extends Controller
                     'qty' => $item['qty'],
                     'subtotal' => $subtotal,
                 ]);
+                
+                // Opsional: Kurangi stok produk setelah dibeli 
+                $product->decrement('stock', $item['qty']);
             }
 
             $transaction->update(['total' => $total]);
