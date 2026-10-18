@@ -22,8 +22,11 @@ Route::post('/logout', [LoginController::class, 'destroy'])
 Route::middleware('auth')->group(function () {
     Route::get('/pos', [TransactionController::class, 'create'])->name('pos.create');
     Route::post('/pos', [TransactionController::class, 'store'])->name('transactions.store');
+
+    // Manager boleh membuka riwayat transaksi. Kasir dan admin juga boleh.
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
 
+    // Hanya admin. Manager dan kasir ditolak dengan 403.
     Route::middleware('role:admin')->group(function () {
         Route::resource('categories', CategoryController::class)->except('show');
         Route::resource('products', ProductController::class)->except(['show', 'destroy']);

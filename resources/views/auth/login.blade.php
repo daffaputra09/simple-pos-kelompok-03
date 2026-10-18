@@ -27,7 +27,7 @@
             <button type="submit" class="w-full bg-slate-900 text-white rounded-md py-2 text-sm">Masuk</button>
         </form>
         <p class="mt-6 text-xs text-slate-500">
-            Akun demo: admin@pos.test atau kasir@pos.test, kata sandi <code>password</code>.
+            Akun demo: admin@pos.test, kasir@pos.test, atau manager@pos.test, kata sandi <code>password</code>.
         </p>
     </div>
 </body>
