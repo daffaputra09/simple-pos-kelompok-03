@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,8 +32,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
 
     // Hanya admin. Manager dan kasir ditolak dengan 403.
-    Route::middleware('role:admin')->group(function () {
-        Route::resource('categories', CategoryController::class)->except('show');
-        Route::resource('products', ProductController::class)->except(['show', 'destroy']);
+   Route::middleware('role:admin')->group(function () {
+    Route::resource('categories', CategoryController::class)->except('show');
+    Route::resource('products', ProductController::class)->except(['show',
+    'destroy']);
+    Route::get('/reports', [ReportController::class,
+    'index'])->name('reports.index');
     });
 });
