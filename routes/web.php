@@ -25,17 +25,31 @@ Route::post('/logout', [LoginController::class, 'destroy'])
     ->name('logout');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/pos', [TransactionController::class, 'create'])->name('pos.create');
-    Route::post('/pos', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::get('/pos', [TransactionController::class, 'create'])
+        ->name('pos.create');
 
-    // Manager boleh membuka riwayat transaksi. Kasir dan admin juga boleh.
-    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::post('/pos', [TransactionController::class, 'store'])
+        ->name('transactions.store');
 
-    // Hanya admin. Manager dan kasir ditolak dengan 403.
-   Route::middleware('role:admin')->group(function () {
-    Route::resource('categories', CategoryController::class)->except('show');
-    Route::resource('products', ProductController::class)->except(['show','destroy']);
-    Route::get('/reports', [ReportController::class,'index'])->name('reports.index');
-    Route::get('/reports/export/csv', [ReportController::class,'exportCsv'])->name('reports.export.csv');
+    // Riwayat transaksi
+    Route::get('/transactions', [TransactionController::class, 'index'])
+        ->name('transactions.index');
+
+    // Khusus admin
+    Route::middleware('role:admin')->group(function () {
+        Route::resource('categories', CategoryController::class)
+            ->except('show');
+
+        Route::resource('products', ProductController::class)
+            ->except(['show', 'destroy']);
+
+        Route::get('/reports', [ReportController::class, 'index'])
+            ->name('reports.index');
+
+        Route::get('/reports/export/csv', [ReportController::class, 'exportCsv'])
+            ->name('reports.export.csv');
+
+        Route::get('/reports/export/xlsx', [ReportController::class, 'exportExcel'])
+            ->name('reports.export.xlsx');
     });
 });
