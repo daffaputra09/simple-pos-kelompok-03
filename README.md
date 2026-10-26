@@ -86,3 +86,11 @@ Berikut adalah skenario pengujian manual untuk memastikan proses autentikasi dan
 ### Kesimpulan Pengujian
 
 Skenario pengujian ini digunakan untuk memastikan bahwa setiap peran memiliki hak akses sesuai ketentuan. Admin dapat mengakses halaman produk dan transaksi, sedangkan kasir dan manager dibatasi berdasarkan hak aksesnya. Selain itu, halaman khusus tamu hanya dapat diakses oleh pengguna yang belum login.
+
+## Pengolahan Data
+
+### Pertanyaan
+Untuk laporan 100.000 transaksi, format mana yang kalian pilih (CSV, Excel, atau PDF), dan kenapa?
+
+### Pembahasan
+CSV. Alasannya, ekspor CSV menggunakan metode *streaming* yang membaca dan mengalirkan data baris demi baris, sehingga penggunaan memori server tetap rendah dan stabil meskipun memproses 100.000 transaksi. Sebaliknya, format PDF memuat seluruh dokumen ke dalam memori sekaligus, sehingga sangat tidak cocok dan dapat membuat sistem kelebihan beban jika dipaksa merender puluhan ribu baris data.
