@@ -7,6 +7,16 @@
         {{ session('success') }}
     </div>
 @endif
+@if ($importErrors->isNotEmpty())
+    <div class="bg-red-50 text-red-700 p-3 rounded-md mb-4 max-w-md">
+        <p class="font-medium mb-2">Baris yang gagal diimpor:</p>
+        <ul class="list-disc pl-5 text-sm">
+            @foreach ($importErrors as $error)
+                <li>{{ $error->message }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 <form method="POST" action="{{ route('import.store') }}" enctype="multipart/form-data" class="max-w-md">
     @csrf
     <label class="block mb-3">

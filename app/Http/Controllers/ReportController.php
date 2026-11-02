@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\SalesReportExport;
 use App\Jobs\ProcessProductImport;
 use App\Models\Category;
+use App\Models\ImportError;
 use App\Models\Transaction;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
@@ -79,7 +80,9 @@ class ReportController extends Controller
 
     public function importForm(): View
     {
-        return view('reports.import');
+        return view('reports.import', [
+            'importErrors' => ImportError::query()->orderBy('row_number')->get(),
+        ]);
     }
 
     public function import(Request $request): RedirectResponse
