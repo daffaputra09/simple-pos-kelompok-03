@@ -67,12 +67,23 @@ class ReportController extends Controller
     {
         [$from, $to] = $this->resolveDateRange($request);
 
+        $topProducts = \Illuminate\Support\Facades\DB::table('transaction_details')
+            ->join('products', 'transaction_details.product_id', '=', 'products.id')
+            ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
+            ->whereBetween('transactions.created_at', [$from, $to])
+            ->select('products.name', \Illuminate\Support\Facades\DB::raw('SUM(transaction_details.qty) as total_qty'))
+            ->groupBy('products.id', 'products.name')
+            ->orderByDesc('total_qty')
+            ->limit(5)
+            ->get();
+
         $pdf = Pdf::loadView('reports.pdf', [
-            'totalPenjualan' => $this->filteredQuery($from, $to)->sum('total'),
+            'totalPenjualan'  => $this->filteredQuery($from, $to)->sum('total'),
             'jumlahTransaksi' => $this->filteredQuery($from, $to)->count(),
-            'transactions' => $this->filteredQuery($from, $to)->latest()->limit(50)->get(),
-            'from' => $from->toDateString(),
-            'to' => $to->toDateString(),
+            'transactions'    => $this->filteredQuery($from, $to)->latest()->limit(50)->get(),
+            'topProducts'     => $topProducts,
+            'from'             => $from->toDateString(),
+            'to'               => $to->toDateString(),
         ]);
 
         return $pdf->download('laporan-penjualan.pdf');
