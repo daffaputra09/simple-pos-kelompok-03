@@ -6,10 +6,12 @@
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
         h1 { font-size: 18px; margin-bottom: 4px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        h2 { font-size: 14px; margin-top: 16px; margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
         th, td { border: 1px solid #999; padding: 4px 8px; text-align: left; }
         th { background: #eee; }
         .right { text-align: right; }
+        .center { text-align: center; }
     </style>
 </head>
 <body>
@@ -17,7 +19,31 @@
     <p>Periode {{ $from }} s.d. {{ $to }}</p>
     <p>Total penjualan: <strong>Rp {{ number_format($totalPenjualan) }}</strong> dari {{ $jumlahTransaksi }} transaksi</p>
 
-    <p>50 transaksi terbaru pada periode ini:</p>
+    <h2>5 Produk Terlaris</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">No</th>
+                <th>Nama Produk</th>
+                <th class="right" style="width: 25%;">Total Terjual</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($topProducts as $index => $item)
+                <tr>
+                    <td class="center">{{ $index + 1 }}</td>
+                    <td>{{ $item->name }}</td>
+                    <td class="right">{{ number_format($item->total_qty) }} item</td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="3" class="center">Belum ada data penjualan pada periode ini.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <h2>50 Transaksi Terbaru</h2>
     <table>
         <thead>
             <tr>
