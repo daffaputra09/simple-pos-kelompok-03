@@ -94,3 +94,27 @@ Untuk laporan 100.000 transaksi, format mana yang kalian pilih (CSV, Excel, atau
 
 ### Pembahasan
 CSV. Alasannya, ekspor CSV menggunakan metode *streaming* yang membaca dan mengalirkan data baris demi baris, sehingga penggunaan memori server tetap rendah dan stabil meskipun memproses 100.000 transaksi. Sebaliknya, format PDF memuat seluruh dokumen ke dalam memori sekaligus, sehingga sangat tidak cocok dan dapat membuat sistem kelebihan beban jika dipaksa merender puluhan ribu baris data.
+
+## Identifikasi Proses untuk Queued Job
+
+### Pertanyaan
+Identifikasi satu proses lain di Simple POS yang menurutmu layak dipindah ke queued job, dan jelaskan alasannya.
+
+### Pembahasan
+Proses yang paling layak dipindahkan ke *queued job* adalah **Pengiriman Struk Transaksi Digital via Email** (misalnya class job `SendTransactionReceiptJob`).
+
+Pada alur kasir POS (`TransactionController::store`), setelah data transaksi penjualan dan rincian item (`TransactionDetail`) berhasil divalidasi serta disimpan ke dalam database, proses pengiriman struk belanja digital ke alamat email pelanggan sebaiknya tidak dijalankan secara langsung (sinkron), melainkan dikirimkan ke dalam antrean antarmuka (*queued job*).
+
+### Alasan dan Manfaat:
+
+1. **Mengurangi Latensi Kasir (Non-blocking I/O):**
+   Proses komunikasi ke server email atau penyedia SMTP pihak ketiga (seperti Mailgun, SES, atau SMTP server) membutuhkan jabat tangan jaringan (*network round-trip*) yang memakan waktu antara 1 hingga 3 detik. Jika dijalankan secara sinkron, halaman kasir akan mengalami *loading/freeze* sebelum bisa melayani pelanggan berikutnya. Dengan memindahkannya ke antrean *job*, respons transaksi kasir kembali instan (sub-detik) sehingga antrean pelanggan di kasir tidak tersendat.
+
+2. **Ketahanan Sistem dan Percobaan Ulang Otomatis (Fault Tolerance & Retry):**
+   Koneksi internet atau server penyedia email rentan mengalami gangguan sewaktu-waktu (*network timeout*). Jika proses pengiriman email gagal di tengah jalan, transaksi utama penjualan di database tetap tersimpan dengan aman dan tidak boleh dibatalkan (*rollback*). Job pengiriman email dapat dikonfigurasi dengan batas percobaan ulang (misalnya `$tries = 3`) dan jeda waktu (`$backoff = [10, 60]`) agar *worker* mencoba mengirim kembali secara otomatis di latar belakang tanpa mengganggu alur aplikasi kasir.
+
+3. **Pemisahan Tanggung Jawab Aplikasi (Decoupling):**
+   Tugas inti transaksi kasir (menyimpan riwayat transaksi dan memotong stok barang) harus bersifat transaksional dan konsisten (*ACID*). Sedangkan pengiriman struk digital atau notifikasi merupakan proses sekunder (*side-effect*). Memisahkan keduanya membuat logika *controller* tetap bersih, terisolasi, dan mudah dipelihara.
+
+### Kesimpulan
+Memindahkan proses pengiriman struk email ke *queued job* meningkatkan performa waktu respons aplikasi kasir secara signifikan, menjaga kelancaran antrean kasir, serta memberikan ketahanan terhadap potensi kegagalan jaringan pihak ketiga melalui mekanisme antrean otomatis.
