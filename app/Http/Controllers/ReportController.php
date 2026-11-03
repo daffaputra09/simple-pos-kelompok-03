@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\SalesReportExport;
+use App\Imports\ProductImport;
 use App\Jobs\ProcessProductImport;
 use App\Models\Category;
 use App\Models\ImportError;
@@ -107,6 +108,24 @@ class ReportController extends Controller
         ProcessProductImport::dispatch($path);
 
         return back()->with('success', 'Import sedang diproses di background.');
+    }
+
+    public function importExcel(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'csv' => ['required', 'file', 'mimes:csv,txt'],
+        ]);
+
+        $import = new ProductImport();
+
+        Excel::import($import, $request->file('csv'));
+
+        $jumlahGagal = $import->failures()->count();
+
+        return back()->with(
+            'success',
+            "Import Laravel Excel selesai. {$jumlahGagal} baris gagal divalidasi."
+        );
     }
 
     private function resolveDateRange(Request $request): array
