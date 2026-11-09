@@ -19,7 +19,7 @@
             const res = await fetch('{{ route('quick-categories.store') }}', {
                 method: 'POST',
                 headers: {
-                    'Accept': 'application/json',
+                   'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': meta.content,
                 },
