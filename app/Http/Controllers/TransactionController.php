@@ -1,5 +1,6 @@
 <?php
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
+
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Http\Resources\TransactionResource;
@@ -41,4 +42,23 @@ class TransactionController extends Controller {
         Gate::authorize('view', $transaction);
         return new TransactionResource($transaction);
     }
+
+   public function create()
+   {
+    // Ambil data produk atau data lain yang dibutuhkan untuk halaman POS
+    $products = \App\Models\Product::all();
+
+    return view('pos.create', compact('products'));
+    }
+ 
+   public function index()
+   {
+    // Ubah ->get() menjadi ->paginate(10) agar mendukung fungsi links() di view
+    $transactions = \App\Models\Transaction::with('user', 'details.product')
+        ->latest()
+        ->paginate(10);
+
+    return view('transactions.index', compact('transactions'));
+   }
+
 }

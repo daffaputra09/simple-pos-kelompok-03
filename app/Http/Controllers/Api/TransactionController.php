@@ -47,5 +47,21 @@ class TransactionController extends Controller
                 'total' => $transaction->total,
             ],
         ], 201);
+
     }
+
+    public function show($id)
+    {
+    $transaction = \App\Models\Transaction::with('user', 'details.product')->find($id);
+
+    if (!$transaction) {
+        return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'data' => $transaction
+    ], 200);
+    }
+
 }
