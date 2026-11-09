@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
@@ -50,12 +51,16 @@ class TransactionController extends Controller
 
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
     $transaction = \App\Models\Transaction::with('user', 'details.product')->find($id);
 
     if (!$transaction) {
         return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+    }
+
+    if ($request->user()->id !== $transaction->user_id && $request->user()->role !== 'admin'){
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
 
     return response()->json([
