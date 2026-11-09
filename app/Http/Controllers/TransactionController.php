@@ -1,87 +1,44 @@
 <?php
-
-namespace App\Http\Controllers;
-
+namespace App\Http\Controllers\Api;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreTransactionRequest;
+use App\Http\Resources\TransactionResource;
 use App\Models\Product;
 use App\Models\Transaction;
-use App\Http\Requests\StoreTransactionRequest;
 use App\Models\TransactionDetail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
-class TransactionController extends Controller
-{
-    public function create()
-    {
-        $products = Product::paginate(12);
-
-        return view('pos.create', ['products' => $products]);
-    }
-
+class TransactionController extends Controller {
     public function store(StoreTransactionRequest $request)
     {
         $validated = $request->validated();
-
-        // 1. Kumpulkan total qty yang diminta per produk
-        $requestedQtys = [];
-        foreach ($validated['items'] as $item) {
-            $productId = $item['product_id'];
-            $requestedQtys[$productId] = ($requestedQtys[$productId] ?? 0) + $item['qty'];
-        }
-
-        // 2. Cek ketersediaan stok di database
-        foreach ($requestedQtys as $productId => $totalQty) {
-            $product = Product::find($productId);
-            if ($totalQty > $product->stock) {
-                // Tolak transaksi dan kembalikan pesan error menyebutkan nama produk
-                return back()->withErrors([
-                    'items' => "Transaksi gagal: Stok produk '{$product->name}' tidak mencukupi! (Sisa stok: {$product->stock}, Diminta: {$totalQty})."
-                ]);
-            }
-        }
-
-        // 3. Jika stok aman, lanjutkan penyimpanan
-        DB::transaction(function () use ($validated) {
-            $transaction = Transaction::create([
-                'user_id' => 1,
-                'total' => 0,
-            ]);
-
+        $transaction = DB::transaction(function () use ($validated, $request) {
+            $transaction = Transaction::create(['user_id' => $request->user()->id,'total' => 0,]);
             $total = 0;
+
             foreach ($validated['items'] as $item) {
-                $product = Product::findOrFail($item['product_id']);
-                $subtotal = $product->price * $item['qty'];
-                $total += $subtotal;
+            $product = Product::findOrFail($item['product_id']);
+            $subtotal = $product->price * $item['qty'];
+            $total += $subtotal;
 
                 TransactionDetail::create([
-                    'transaction_id' => $transaction->id,
-                    'product_id' => $product->id,
-                    'qty' => $item['qty'],
-                    'subtotal' => $subtotal,
-                ]);
-                
-                // Opsional: Kurangi stok produk setelah dibeli 
-                $product->decrement('stock', $item['qty']);
+                'transaction_id' => $transaction->id,
+                'product_id' => $product->id,
+                'qty' => $item['qty'],
+                'subtotal' => $subtotal,]);
             }
 
             $transaction->update(['total' => $total]);
+            return $transaction;
         });
-
-        return redirect()
-            ->route('pos.create')
-            ->with('success', 'Transaksi berhasil disimpan.');
+    
+        return response()->json([
+        'data' => ['id' => $transaction->id,'total' => $transaction->total,],], 201);
     }
-
-    public function index()
-    {
-        $transactions = Transaction::with(['details.product', 'user'])
-            ->latest()
-            ->paginate(15);
-
-        return view('transactions.index', compact('transactions'));
-    }
-
-    public function show(string $id)
-    {
-        return "Detail transaksi #{$id}";
+    
+    public function show(Transaction $transaction) {
+        Gate::authorize('view', $transaction);
+        return new TransactionResource($transaction);
     }
 }
