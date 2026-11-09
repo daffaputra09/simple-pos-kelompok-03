@@ -36,5 +36,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/import', [ReportController::class, 'importForm'])->name('import.create');
         Route::post('/import', [ReportController::class, 'import'])->name('import.store');
         Route::post('/import/excel', [ReportController::class, 'importExcel'])->name('reports.import.excel');
+        Route::get('/quick-categories', [QuickCategoryController::class,'index'])->name('quick-categories.index');
+        Route::post('/quick-categories', [QuickCategoryController::class,'store'])->name('quick-categories.store');
     });
 });
