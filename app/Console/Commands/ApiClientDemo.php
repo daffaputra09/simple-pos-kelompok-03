@@ -31,6 +31,16 @@ class ApiClientDemo extends Command
     {
         $baseUrl = 'http://127.0.0.1:8000';
 
+        $wrongLogin = Http::acceptJson()->post("{$baseUrl}/api/login", [
+            'email' => 'kasir@pos.test',
+            'password' => 'password-salah',
+        ]);
+
+        if ($wrongLogin->failed()) {
+            $this->error('Login gagal: '.$wrongLogin->json('message'));
+            $this->warn('Percobaan pertama berhenti di sini. Token tidak diambil, jadi produk dan transaksi tidak dipanggil dengan token kosong.');
+        }
+
         // Klien yang baik mengulang hanya error yang memang layak diulang, dengan jeda yang makin panjang
         $when = fn ($e) => $e instanceof ConnectionException
             || in_array($e->response?->status(), [429, 502, 503, 504]);

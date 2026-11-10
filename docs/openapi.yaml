@@ -1,4 +1,11 @@
 openapi: 3.0.0
+# Uji di Postman terasa lebih mudah daripada curl. Method, URL, header Accept
+# dan Authorization, serta body JSON diisi pada kotak yang terpisah, dan kode
+# status 200, 201, atau 422 langsung terlihat di panel respons. Di curl semua
+# bagian itu menjadi satu perintah, sehingga satu tanda kutip yang keliru sudah
+# membuat request gagal sebelum sampai ke server. Postman lebih nyaman untuk
+# mencoba endpoint berulang kali, sedangkan curl lebih ringkas kalau perintahnya
+# perlu disalin ke laporan.
 info:
   title: Simple POS API
   version: 1.0.0
