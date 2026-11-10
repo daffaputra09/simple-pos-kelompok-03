@@ -69,24 +69,24 @@ class ApiTransactionTest extends TestCase
     }
 
     public function test_expired_token_returns_unauthorized()
-{
-    $user = User::factory()->create();
+    {
+        $user = User::factory()->create();
 
-    $token = $user->createToken(
-        'test-token',
-        ['*'],
-        now()->subDays(3)
-    )->plainTextToken;
+        $token = $user->createToken(
+            'test-token',
+            ['*'],
+            now()->subDays(3)
+        )->plainTextToken;
 
-    $responseExpired = $this->withHeaders([
-        'Authorization' => 'Bearer ' . $token,
-        'Idempotency-Key' => 'test-expired-token',
-    ])->postJson('/api/transactions', [
-        'items' => [
-            ['product_id' => 1, 'qty' => 1]
-        ]
-    ]);
+        $responseExpired = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+            'Idempotency-Key' => 'test-expired-token',
+        ])->postJson('/api/transactions', [
+            'items' => [
+                ['product_id' => 1, 'qty' => 1]
+            ]
+        ]);
 
-    $responseExpired->assertStatus(401);
-}
+        $responseExpired->assertStatus(401);
+    }
 }
