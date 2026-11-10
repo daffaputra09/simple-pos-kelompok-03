@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -66,4 +67,26 @@ class ApiTransactionTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.id', $transaction->id);
     }
+
+    public function test_expired_token_returns_unauthorized()
+{
+    $user = User::factory()->create();
+
+    $token = $user->createToken(
+        'test-token',
+        ['*'],
+        now()->subDays(3)
+    )->plainTextToken;
+
+    $responseExpired = $this->withHeaders([
+        'Authorization' => 'Bearer ' . $token,
+        'Idempotency-Key' => 'test-expired-token',
+    ])->postJson('/api/transactions', [
+        'items' => [
+            ['product_id' => 1, 'qty' => 1]
+        ]
+    ]);
+
+    $responseExpired->assertStatus(401);
+}
 }

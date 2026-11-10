@@ -13,6 +13,7 @@ class EnsureIdempotency
     public function handle(Request $request, Closure $next): Response
     {
         $key = $request->header('Idempotency-Key');
+        $idempotencyKey = $request->header('Idempotency-Key');
 
         if (! $key) {
             return response()->json(['message' => 'Header Idempotency-Key wajib diisi.'], 400);
@@ -23,9 +24,11 @@ class EnsureIdempotency
 
         try {
             $record = IdempotencyKey::create([
-                'user_id'      => $userId,
-                'key'          => $key,
+                'key' => $idempotencyKey,
+                'user_id' => $request->user()?->id,
                 'request_hash' => $hash,
+                'response_status' => null,
+                'response_body' => null,
             ]);
         } catch (UniqueConstraintViolationException) {
             $record = IdempotencyKey::where('user_id', $userId)->where('key', $key)->firstOrFail();
