@@ -10,7 +10,7 @@ info:
   title: Simple POS API
   version: 1.0.0
 paths:
-  /api/login:
+  /api/v1/login:
     post:
       summary: Login dan dapatkan token
       requestBody:
@@ -38,14 +38,40 @@ paths:
                 type: object
                 properties:
                   message: { type: string }
-  /api/products:
+
+  /api/v1/products:
     get:
       summary: Ambil daftar produk
       security:
         - bearerAuth: []
+      parameters:
+        - name: category_id
+          in: query
+          description: Filter berdasarkan ID kategori
+          required: false
+          schema:
+            type: integer
+        - name: q
+          in: query
+          description: Kata kunci pencarian nama produk
+          required: false
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: Pengurutan data (contoh name, -name, price, -price)
+          required: false
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          description: Jumlah item per halaman (1 sampai 100)
+          required: false
+          schema:
+            type: integer
       responses:
         '200':
-          description: Daftar produk
+          description: Daftar produk berpaginasi
           content:
             application/json:
               schema:
@@ -62,7 +88,8 @@ paths:
                         category: { type: string }
         '401':
           description: Token tidak ada atau tidak valid
-  /api/transactions:
+
+  /api/v1/transactions:
     post:
       summary: Buat transaksi baru
       security:
@@ -97,6 +124,26 @@ paths:
           description: Token tidak ada atau tidak valid
         '422':
           description: Input tidak valid, misalnya product_id tidak ditemukan
+
+  /api/v1/transactions/{id}:
+    get:
+      summary: Detail transaksi
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detail data transaksi
+        '403':
+          description: Akses ditolak
+        '404':
+          description: Transaksi tidak ditemukan
+
 components:
   securitySchemes:
     bearerAuth:
